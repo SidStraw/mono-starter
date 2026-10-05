@@ -1,0 +1,44 @@
+name: Dependency maintenance
+on:
+  schedule:
+    - cron: '0 4 * * *'
+      timezone: Asia/Taipei
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dependency-controller
+  cancel-in-progress: false
+jobs:
+  renovate:
+    if: vars.MAINTENANCE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install trusted controller
+        run: |
+          node scripts/bootstrap.mjs
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          pnpm install --frozen-lockfile
+      - name: Prepare weekly lockfile without writer credentials
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule != ''
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          if [ "$(TZ=Asia/Taipei date +%u)" = 1 ]; then node maintenance/weekly-lockfile.mjs prepare ../weekly-candidate; fi
+      - name: Publish weekly lockfile
+        env:
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          if [ -d ../weekly-candidate ]; then node maintenance/weekly-lockfile.mjs publish ../weekly-candidate; fi
+      - name: Run trusted manifest-only Renovate
+        env:
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+          RENOVATE_GIT_AUTHOR: ${{ vars.MAINTENANCE_GIT_AUTHOR }}
+        run: node maintenance/run-renovate.mjs

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "repository": null,
+  "updaterAppId": null,
+  "pnpm": {
+    "minimumReleaseAge": 4320,
+    "minimumReleaseAgeStrict": true,
+    "minimumReleaseAgeIgnoreMissingTime": false,
+    "trustPolicy": "no-downgrade",
+    "trustLockfile": false,
+    "blockExoticSubdeps": true,
+    "strictDepBuilds": true
+  },
+  "approvedBuilds": {
+    "esbuild@0.28.2": true,
+    "@google/genai@2.21.0": false,
+    "protobufjs@7.6.6": false
+  },
+  "repair": {
+    "maxAttempts": 2,
+    "maxMilliseconds": 1200000,
+    "maxTokens": 60000,
+    "maxCostUsd": 5,
+    "provider": null,
+    "model": null,
+    "compatibilityConfigs": [],
+    "endpoint": null,
+    "pricing": null,
+    "migrationGuides": []
+  },
+  "requiredJobs": ["linux-x64", "macos-arm64"],
+  "requiredCheck": "starter/verification",
+  "updaterBotUserId": null
+}

@@ -1,0 +1,60 @@
+name: Dependency artifacts
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr:
+        required: true
+        type: number
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: dependency-patch-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: false
+jobs:
+  update:
+    if: vars.MAINTENANCE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: controller
+          persist-credentials: false
+      - name: Install trusted controller
+        working-directory: controller
+        run: |
+          node scripts/bootstrap.mjs
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          pnpm install --frozen-lockfile
+      - name: Authorize current updater PR
+        id: identity
+        working-directory: controller
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+        run: node maintenance/authorize-pr.mjs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+          ref: ${{ steps.identity.outputs.head }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Update in a container without writer/model secrets
+        working-directory: controller
+        env:
+          BOUND_HEAD: ${{ steps.identity.outputs.head }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/artifact-worker.mjs ../candidate "$BOUND_HEAD"
+      - name: Publish verified patch atomically
+        working-directory: controller
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          BOUND_HEAD: ${{ steps.identity.outputs.head }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+        run: node maintenance/publish-patch.mjs ../candidate "$BOUND_HEAD" "$PR_NUMBER" update

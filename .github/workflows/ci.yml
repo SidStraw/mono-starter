@@ -1,0 +1,118 @@
+name: Starter CI
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: starter/${{ matrix.id }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: linux-x64
+            runner: ubuntu-24.04
+            platform: linux
+            arch: x64
+          - id: macos-arm64
+            runner: macos-15
+            platform: darwin
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: controller
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm runner architecture
+        env:
+          EXPECT_PLATFORM: ${{ matrix.platform }}
+          EXPECT_ARCH: ${{ matrix.arch }}
+        run: node -e 'if(process.platform!==process.env.EXPECT_PLATFORM||process.arch!==process.env.EXPECT_ARCH)process.exit(1)'
+      - name: Install trusted controller
+        working-directory: controller
+        run: |
+          node scripts/bootstrap.mjs
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          pnpm install --frozen-lockfile
+      - name: Prepare candidate
+        working-directory: controller
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          POLICY_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+          UPDATER_PR: ${{ github.event.pull_request.user.type == 'Bot' }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/ci-worker.mjs ../candidate "$CANDIDATE_HEAD" "$CANDIDATE_BASE" "$POLICY_SHA" prepare
+      - name: Supply-chain gates
+        working-directory: controller
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          POLICY_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/ci-worker.mjs ../candidate "$CANDIDATE_HEAD" "$CANDIDATE_BASE" "$POLICY_SHA" supply
+      - name: Compatibility checks
+        working-directory: controller
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          POLICY_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/ci-worker.mjs ../candidate "$CANDIDATE_HEAD" "$CANDIDATE_BASE" "$POLICY_SHA" compatibility
+      - name: Fresh starter checks
+        working-directory: controller
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          POLICY_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/ci-worker.mjs ../candidate "$CANDIDATE_HEAD" "$CANDIDATE_BASE" "$POLICY_SHA" starter
+  verification:
+    name: starter/aggregate
+    if: always()
+    needs: [verify]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+      - name: Install trusted aggregate controller
+        run: |
+          node scripts/bootstrap.mjs
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          pnpm install --frozen-lockfile
+      - name: Aggregate actual job conclusions
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          REQUIRED_MATRIX_RESULT: ${{ needs.verify.result }}
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+        run: node maintenance/report-gate.mjs

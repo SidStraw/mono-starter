@@ -1,0 +1,189 @@
+{
+  "actions": {
+    "checkout": {
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "version": "v7.0.1",
+      "publishedAt": "2026-07-20T15:10:05Z",
+      "source": "https://github.com/actions/checkout/releases/tag/v7.0.1"
+    }
+  },
+  "imageRelease": {
+    "version": "44.132.1",
+    "publishedAt": "2026-10-02T05:41:40Z",
+    "source": "https://github.com/renovatebot/renovate/releases/tag/44.132.1"
+  },
+  "queriedAt": "2026-10-05T09:03:30.338Z",
+  "cooldownMinutes": 4320,
+  "node": {
+    "version": "24.21.0",
+    "lts": "Krypton",
+    "publishedAt": "2026-09-07",
+    "source": "https://nodejs.org/dist/index.json"
+  },
+  "packages": {
+    "@babel/parser": {
+      "version": "8.0.6",
+      "publishedAt": "2026-09-18T13:49:23.808Z",
+      "source": "https://registry.npmjs.org/%40babel%2Fparser",
+      "repository": {
+        "url": "https://github.com/babel/babel.git",
+        "type": "git",
+        "directory": "packages/babel-parser"
+      },
+      "engines": {
+        "node": "^22.18.0 || >=24.11.0"
+      },
+      "integrity": "sha512-LpGDIYJAzc3Y3PT9x+FxBrGYu2PlWxLmyN7SwPTzaX0LSwEmFJBsRnPBqmaXF2r1v+Zhz6lNiEJ+7yKtM5+Ugg=="
+    },
+    "@earendil-works/pi-ai": {
+      "version": "1.0.0",
+      "publishedAt": "2026-10-01T19:12:18.708Z",
+      "source": "https://registry.npmjs.org/%40earendil-works%2Fpi-ai",
+      "repository": {
+        "url": "git+https://github.com/earendil-works/pi.git",
+        "type": "git",
+        "directory": "packages/ai"
+      },
+      "engines": {
+        "node": ">=22.19.0"
+      },
+      "integrity": "sha512-3/W1vdDaVtpeMd23ElvJC12HLA5yS/BGqqcXF+0SK082dN7cbgNcCwguTBRBC258Ke8SzSvUW1B75iAf8w8IxA=="
+    },
+    "@earendil-works/pi-coding-agent": {
+      "version": "1.0.0",
+      "publishedAt": "2026-10-01T19:15:22.967Z",
+      "source": "https://registry.npmjs.org/%40earendil-works%2Fpi-coding-agent",
+      "repository": {
+        "url": "git+https://github.com/earendil-works/pi.git",
+        "type": "git",
+        "directory": "packages/coding-agent"
+      },
+      "engines": {
+        "node": ">=22.19.0"
+      },
+      "integrity": "sha512-/FtbxoSQU/mEv1QnichJjRjqteqaIaMWxmhB4G367+MwZfX7/DI5B9YAg5lqbN7nztFskBEtUSZ+FlmMBECtMw=="
+    },
+    "@playwright/test": {
+      "version": "1.63.0",
+      "publishedAt": "2026-09-04T22:44:00.304Z",
+      "source": "https://registry.npmjs.org/%40playwright%2Ftest",
+      "repository": {
+        "url": "git+https://github.com/microsoft/playwright.git",
+        "type": "git"
+      },
+      "engines": {
+        "node": ">=20"
+      },
+      "integrity": "sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ=="
+    },
+    "@types/node": {
+      "version": "24.19.1",
+      "publishedAt": "2026-10-01T22:38:02.894Z",
+      "source": "https://registry.npmjs.org/%40types%2Fnode",
+      "repository": {
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "type": "git",
+        "directory": "types/node"
+      },
+      "engines": null,
+      "integrity": "sha512-aS3/DG0oM05K0RIXXP+hKjinGG5IgSSVGzswZxW3O0sS3pH4/fycXundUC9XsszgKCk4gHXylTEK6hyFxVxnoQ=="
+    },
+    "backlog.md": {
+      "version": "1.53.0",
+      "publishedAt": "2026-09-24T17:28:54.558Z",
+      "source": "https://registry.npmjs.org/backlog.md",
+      "repository": {
+        "url": "git+https://github.com/MrLesk/Backlog.md.git",
+        "type": "git"
+      },
+      "engines": null,
+      "integrity": "sha512-VfYdR7RGu+mgEpSbHpBfdsyHVlJ+d4DIRzixkmyLqsfgCk4pLPDRhNkbu6dU3UgLEbQfxKhDuXUIbN/RLyGk1A=="
+    },
+    "typescript": {
+      "version": "7.0.2",
+      "publishedAt": "2026-07-08T15:55:18.431Z",
+      "source": "https://registry.npmjs.org/typescript",
+      "repository": {
+        "url": "git+https://github.com/microsoft/TypeScript.git",
+        "type": "git"
+      },
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "integrity": "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA=="
+    },
+    "vite-plus": {
+      "version": "1.0.0",
+      "publishedAt": "2026-09-28T05:37:20.027Z",
+      "source": "https://registry.npmjs.org/vite-plus",
+      "repository": {
+        "url": "git+https://github.com/voidzero-dev/vite-plus.git",
+        "type": "git",
+        "directory": "packages/cli"
+      },
+      "engines": {
+        "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+      },
+      "integrity": "sha512-2ezzBWt+AVO+I2F9Cpb2Of0J12Lat35kWZ/FRL2monMnKZuACKfkYAA/nMqdDo1KwB8sWjTKzmD9mRCh1Q1n+g=="
+    },
+    "yaml": {
+      "version": "2.9.1",
+      "publishedAt": "2026-09-11T20:30:10.905Z",
+      "source": "https://registry.npmjs.org/yaml",
+      "repository": {
+        "url": "git+https://github.com/eemeli/yaml.git",
+        "type": "git"
+      },
+      "engines": {
+        "node": ">= 14.6"
+      },
+      "integrity": "sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw=="
+    },
+    "vitest": {
+      "version": "5.0.1",
+      "publishedAt": "2026-09-15T08:49:35.830Z",
+      "source": "https://registry.npmjs.org/vitest",
+      "repository": {
+        "url": "git+https://github.com/vitest-dev/vitest.git",
+        "type": "git",
+        "directory": "packages/vitest"
+      },
+      "engines": {
+        "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+      },
+      "integrity": "sha512-iA95lQbKEkvrtTkdAgnWbXfbipWiiWe/hDl2P5tMi6WFwD76G0NxXAGp/M9EOcYupeGJRr6wppMc7CoA41TQjg=="
+    },
+    "pnpm": {
+      "version": "12.8.2",
+      "publishedAt": "2026-09-30T01:15:12.518Z",
+      "source": "https://registry.npmjs.org/pnpm",
+      "repository": {
+        "url": "https://github.com/pnpm/pnpm",
+        "type": "git",
+        "directory": "pnpm/npm/pnpm"
+      },
+      "engines": {
+        "node": ">=18.*"
+      },
+      "integrity": "sha512-pZQWeWY9lSxfDsw4upivmLTcAblXgDVPaJTy+HOXPO8vfimJ19s+5Tk5OK4h9i/ga832hdR13a2CmmIJXSuLEQ=="
+    },
+    "@voidzero-dev/vite-plus-core": {
+      "version": "1.0.0",
+      "publishedAt": "2026-09-28T05:31:52.032Z",
+      "source": "https://registry.npmjs.org/%40voidzero-dev%2Fvite-plus-core",
+      "repository": {
+        "url": "git+https://github.com/voidzero-dev/vite-plus.git",
+        "type": "git",
+        "directory": "packages/core"
+      },
+      "engines": {
+        "node": "^20.19.0 || ^22.18.0 || >=24.11.0"
+      },
+      "integrity": "sha512-GHCd6d7h3JVojI/yxe/EAHwX5gn+OI7G932VBnYoTiwATLJrvHOs+okx7Ek2LGEJ57NJRENwCFgVYefjwPLfFA=="
+    }
+  },
+  "fingerprint": "f4de7c62c3bdb67cdef25ed5a589f5a1afb3d977065c1e9ee7fab2365f20d534",
+  "images": {
+    "renovate": "ghcr.io/renovatebot/renovate:44.132.1@sha256:70aea9310d45b93786db8cab3a91be1f2005fc3a73d805ff8fc9367ea170dfe0"
+  }
+}

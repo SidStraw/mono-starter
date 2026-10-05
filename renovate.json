@@ -1,0 +1,57 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "dependencyDashboard": false,
+  "rangeStrategy": "pin",
+  "ignoreUnstable": true,
+  "minimumReleaseAge": "3 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "minimumReleaseAgeBuffer": "30 minutes",
+  "prConcurrentLimit": 3,
+  "branchConcurrentLimit": 3,
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "rebaseWhen": "behind-base-branch",
+  "skipArtifactsUpdate": true,
+  "lockFileMaintenance": {
+    "enabled": false,
+    "schedule": ["before 5am on monday"],
+    "automerge": true
+  },
+  "timezone": "Asia/Taipei",
+  "packageRules": [
+    {
+      "matchPackageNames": ["vite-plus"],
+      "groupName": "Vite+ toolchain"
+    },
+    {
+      "matchPackageNames": ["vitest", "@voidzero-dev/vite-plus-core"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["@earendil-works/pi-coding-agent", "@earendil-works/pi-ai"],
+      "groupName": "Pi toolchain"
+    },
+    {
+      "matchUpdateTypes": ["patch", "minor", "major", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": ">=24.0.0 <25.0.0",
+      "description": "Krypton LTS track; a new LTS track requires reviewed policy change."
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^maintenance/images\\.json$/"],
+      "matchStrings": [
+        "\"renovate\": \"(?<depName>ghcr\\.io/renovatebot/renovate):(?<currentValue>\\d+\\.\\d+\\.\\d+)@(?<currentDigest>sha256:[a-f0-9]{64})\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "semver"
+    }
+  ]
+}

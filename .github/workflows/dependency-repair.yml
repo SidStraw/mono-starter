@@ -1,0 +1,73 @@
+name: Dependency repair
+on:
+  workflow_run:
+    workflows: [Starter CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        required: true
+        type: number
+      run:
+        required: true
+        type: number
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+concurrency:
+  group: dependency-patch-${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+  cancel-in-progress: false
+jobs:
+  repair:
+    if: vars.MAINTENANCE_ENABLED == 'true' && vars.PI_REPAIR_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: controller
+          persist-credentials: false
+      - name: Install trusted controller
+        working-directory: controller
+        run: |
+          node scripts/bootstrap.mjs
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          pnpm install --frozen-lockfile
+      - name: Authorize failed run and repair budget
+        id: identity
+        working-directory: controller
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+          FAILED_RUN: ${{ github.event.workflow_run.id || inputs.run }}
+        run: node maintenance/authorize-pr.mjs repair
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+          ref: ${{ steps.identity.outputs.head }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run isolated bounded Pi repair
+        working-directory: controller
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+          FAILED_RUN: ${{ github.event.workflow_run.id || inputs.run }}
+          BOUND_HEAD: ${{ steps.identity.outputs.head }}
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+          MODEL_API_KEY: ${{ secrets.PI_MODEL_API_KEY }}
+        run: |
+          export PATH="$PWD/.toolchain/bin:$PATH"
+          node maintenance/repair-runner.mjs ../candidate "$BOUND_HEAD"
+      - name: Publish verified repair atomically
+        working-directory: controller
+        env:
+          GH_READ_TOKEN: ${{ github.token }}
+          BOUND_HEAD: ${{ steps.identity.outputs.head }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr }}
+          MAINTENANCE_APP_ID: ${{ vars.MAINTENANCE_APP_ID }}
+          MAINTENANCE_INSTALLATION_ID: ${{ vars.MAINTENANCE_INSTALLATION_ID }}
+          MAINTENANCE_APP_PRIVATE_KEY: ${{ secrets.MAINTENANCE_APP_PRIVATE_KEY }}
+        run: node maintenance/publish-patch.mjs ../candidate "$BOUND_HEAD" "$PR_NUMBER" repair

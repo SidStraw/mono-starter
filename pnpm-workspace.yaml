@@ -1,0 +1,21 @@
+packages:
+  - apps/*
+  - packages/*
+saveExact: true
+minimumReleaseAge: 4320
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustPolicy: no-downgrade
+trustLockfile: false
+blockExoticSubdeps: true
+strictDepBuilds: true
+allowBuilds:
+  esbuild@0.28.2: true
+  '@google/genai@2.21.0': false
+  protobufjs@7.6.6: false
+peerDependencyRules:
+  allowedVersions:
+    vitest@5.0.1>vite: 1.0.0
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vitest: 5.0.1
