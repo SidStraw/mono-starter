@@ -53,7 +53,7 @@ function normalizeManifest(data) {
   const copy = structuredClone(data);
   for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
     for (const [key, value] of Object.entries(copy[section] ?? {})) {
-      if (value.startsWith('workspace:')) continue;
+      if (value.startsWith('workspace:') || value.startsWith('catalog:')) continue;
       if (!version.test(value) && !/^npm:(?:@[^/]+\/)?[^@]+@\d+\.\d+\.\d+$/.test(value))
         throw new Error('Floating manifest version');
       copy[section][key] = '<version>';
@@ -62,6 +62,12 @@ function normalizeManifest(data) {
   if (copy.packageManager) {
     if (!/^pnpm@\d+\.\d+\.\d+$/.test(copy.packageManager)) throw new Error('Floating pnpm');
     copy.packageManager = 'pnpm@<version>';
+  }
+  if (copy.devEngines?.runtime) {
+    const runtime = copy.devEngines.runtime;
+    if (runtime.name !== 'node' || !version.test(runtime.version) || runtime.onFail !== 'download')
+      throw new Error('Invalid pinned runtime');
+    runtime.version = '<version>';
   }
   return copy;
 }
@@ -78,18 +84,17 @@ export function updaterChange(path, before, after) {
     }
     return true;
   }
-  if (path === '.node-version') {
-    if (!version.test(before.trim()) || !version.test(after.trim()))
-      throw new Error('Floating Node');
-    return true;
-  }
   if (path === 'maintenance/images.json') {
     const left = JSON.parse(before);
     const right = JSON.parse(after);
-    const image = /^ghcr\.io\/renovatebot\/renovate:\d+\.\d+\.\d+@sha256:[a-f0-9]{64}$/;
-    if (!image.test(left.renovate) || !image.test(right.renovate))
-      throw new Error('Unpinned image');
-    left.renovate = right.renovate = '<image>';
+    const images = {
+      renovate: /^ghcr\.io\/renovatebot\/renovate:\d+\.\d+\.\d+@sha256:[a-f0-9]{64}$/,
+      node: /^node:\d+\.\d+\.\d+-bookworm-slim@sha256:[a-f0-9]{64}$/,
+    };
+    for (const [name, format] of Object.entries(images)) {
+      if (!format.test(left[name]) || !format.test(right[name])) throw new Error('Unpinned image');
+      left[name] = right[name] = '<image>';
+    }
     if (!isDeepStrictEqual(left, right)) throw new Error('Image configuration changed');
     return true;
   }
@@ -106,7 +111,11 @@ export function updaterChange(path, before, after) {
   if (path === 'pnpm-workspace.yaml') {
     const normalize = (text) => {
       const obj = parse(text);
-      for (const key of ['vite', 'vitest'])
+      for (const [key, value] of Object.entries(obj.catalog ?? {})) {
+        if (!version.test(value)) throw new Error('Floating catalog version');
+        obj.catalog[key] = '<version>';
+      }
+      for (const key of ['vite@*', 'vitest@*'])
         if (obj.overrides?.[key]) obj.overrides[key] = '<version>';
       if (obj.peerDependencyRules?.allowedVersions) {
         const entries = Object.entries(obj.peerDependencyRules.allowedVersions);
@@ -124,7 +133,6 @@ export function updaterChange(path, before, after) {
       throw new Error('Updater weakened workspace policy');
     return true;
   }
-  if (path === 'docs/toolchain-baseline.json' || path === 'docs/toolchain-baseline.md') return true;
   if (path.startsWith('.github/workflows/') || path === 'maintenance/renovate-config.cjs') {
     const normalize = (text) =>
       text

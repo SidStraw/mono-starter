@@ -12,7 +12,6 @@ import {
 import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { dependencyVersion, configObject } from '../scripts/verify-policy.mjs';
 
 const expected = {
   repository: 'owner/repo',
@@ -79,23 +78,6 @@ void describe('policy and patch boundary', () => {
       await rm(temp, { recursive: true, force: true });
     }
   });
-  void it('rejects floating registry and alias versions', () => {
-    for (const value of [
-      'latest',
-      '^1.0.0',
-      '~1.0.0',
-      'npm:pkg@latest',
-      'https://example.com/pkg.tgz',
-    ])
-      assert.equal(dependencyVersion(value), false);
-    assert.equal(dependencyVersion('workspace:*'), true);
-  });
-  void it('reads disabled typeCheck as disabled without executing config', () =>
-    assert.equal(
-      configObject('export default defineConfig({lint:{options:{typeCheck:false}}});').lint.options
-        .typeCheck,
-      false,
-    ));
   void it('rejects protected tests, snapshots and traversal', () => {
     for (const path of [
       'packages/core/src/index.test.ts',
@@ -121,6 +103,31 @@ void describe('policy and patch boundary', () => {
     assert.equal(updaterChange('package.json', before, after), true);
     assert.throws(() =>
       updaterChange('package.json', before, after.replace('vp test run', 'true')),
+    );
+  });
+  void it('allows a pinned runtime upgrade while preserving native runtime management', () => {
+    const before = {
+      devEngines: { runtime: { name: 'node', version: '24.21.0', onFail: 'download' } },
+    };
+    const after = structuredClone(before);
+    after.devEngines.runtime.version = '24.22.0';
+    assert.equal(
+      updaterChange('package.json', JSON.stringify(before), JSON.stringify(after)),
+      true,
+    );
+    after.devEngines.runtime.onFail = 'ignore';
+    assert.throws(() =>
+      updaterChange('package.json', JSON.stringify(before), JSON.stringify(after)),
+    );
+  });
+  void it('allows exact catalog upgrades without permitting floating versions or policy changes', () => {
+    const before = 'catalog: {vite-plus: 1.0.0}\nstrictDepBuilds: true';
+    assert.equal(
+      updaterChange('pnpm-workspace.yaml', before, before.replace('1.0.0', '1.1.0')),
+      true,
+    );
+    assert.throws(() =>
+      updaterChange('pnpm-workspace.yaml', before, before.replace('1.0.0', '^1.1.0')),
     );
   });
   void it('rejects weakening install policy', () =>

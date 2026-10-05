@@ -1,5 +1,8 @@
 # Vite+ starter 實作計畫
 
+> 此文件保留初版實作歷程。2026-10-05 精簡調整由 Backlog TASK-9 追蹤；現行流程以 README、architecture.md、maintenance.md 及修訂後規格為準。
+
+
 規劃日期：2026-10-05（Asia/Taipei）。狀態：計畫文件，尚未開始 starter 實作。
 
 依據：[Agent 執行提示規格](./2026-10-05-vite-plus-starter-agent-spec.md)。本計畫將規格轉成有相依順序、產物與驗收條件的工作階段；工具版本仍須在實作時完成 registry 與 release 查證。

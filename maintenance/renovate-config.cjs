@@ -11,6 +11,5 @@ module.exports = {
   allowPlugins: false,
   allowedCommands: [],
   allowShellExecutorForPostUpgradeCommands: false,
-  skipArtifactsUpdate: true,
   exposeAllEnv: false,
 };

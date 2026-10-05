@@ -63,7 +63,7 @@ const resources = join(temp, 'agent');
 const container = `starter-candidate-${randomUUID()}`;
 const agentContainer = `starter-pi-${randomUUID()}`;
 let broker;
-const image = JSON.parse(await readFile('maintenance/images.json', 'utf8')).renovate;
+const image = JSON.parse(await readFile('maintenance/images.json', 'utf8')).node;
 const dockerEnv = { PATH: process.env.PATH, HOME: process.env.HOME };
 function docker(args, timeout = Math.max(1, deadline - Date.now())) {
   return execFileSync('docker', args, {
@@ -153,7 +153,7 @@ try {
       'bash',
       image,
       '-lc',
-      'node scripts/bootstrap.mjs && export PATH=/work/.toolchain/bin:$PATH && pnpm install --frozen-lockfile',
+      'mkdir -p .toolchain/bin && npm install --prefix .toolchain --no-save --package-lock=false --ignore-scripts --no-audit --no-fund "pnpm@$(node -p \'require("./package.json").packageManager.split("@")[1]\')" && ln -sf "../node_modules/@pnpm/exe.$(node -p \'process.platform + "-" + process.arch\')/pnpm" .toolchain/bin/pnpm && ln -sf ../../node_modules/.bin/node .toolchain/bin/node && export PATH="$PWD/.toolchain/bin:$PATH" && pnpm install --frozen-lockfile',
     ]);
   docker([
     'run',

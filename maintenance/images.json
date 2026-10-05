@@ -1,3 +1,4 @@
 {
-  "renovate": "ghcr.io/renovatebot/renovate:44.132.1@sha256:70aea9310d45b93786db8cab3a91be1f2005fc3a73d805ff8fc9367ea170dfe0"
+  "renovate": "ghcr.io/renovatebot/renovate:44.132.1@sha256:70aea9310d45b93786db8cab3a91be1f2005fc3a73d805ff8fc9367ea170dfe0",
+  "node": "node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6"
 }

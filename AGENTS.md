@@ -26,7 +26,7 @@ Do not edit Backlog task, draft, document, decision, or milestone markdown files
 
 ## Starter engineering rules
 
-- Use the project-local Node/pnpm bootstrap and prepend `.toolchain/bin` to PATH. Do not change global settings.
+- Use the native project-local Node/pnpm setup documented in README and prepend `.toolchain/bin` to PATH. Node is managed by pnpm `devEngines.runtime`; shared versions use the pnpm catalog. Do not change global settings.
 - Keep apps in `apps/*`, reusable modules in `packages/*`; use package names, public exports and `workspace:*`. Packages cannot import apps or form cycles.
 - Use `vp run` for orchestration. `pnpm verify` is the final local acceptance entry; final CI runs without task cache. Tests must exist and must execute.
 - Keep TypeScript strict and root `typeAware`/`typeCheck` enabled. Never replace package boundaries with TS paths or source aliases.

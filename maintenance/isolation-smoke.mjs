@@ -7,7 +7,7 @@ const temp = await mkdtemp(join(tmpdir(), 'isolation-canary-'));
 const canary = 'fixture-controller-only-secret';
 try {
   await writeFile(join(temp, 'controller-secret'), canary);
-  const image = JSON.parse(await readFile('maintenance/images.json', 'utf8')).renovate;
+  const image = JSON.parse(await readFile('maintenance/images.json', 'utf8')).node;
   const output = execFileSync(
     'docker',
     [
@@ -18,7 +18,7 @@ try {
       '--cap-drop=ALL',
       '--security-opt=no-new-privileges',
       '--entrypoint',
-      '/usr/local/renovate/node',
+      'node',
       image,
       '-e',
       "const fs=require('fs'),os=require('os');if(process.env.MODEL_API_KEY||process.env.MAINTENANCE_APP_PRIVATE_KEY||process.env.GH_WRITE_TOKEN||fs.existsSync('/var/run/docker.sock')||fs.existsSync(process.argv[1]))process.exit(1);const interfaces=Object.values(os.networkInterfaces()).flat();if(interfaces.some(x=>!x.internal))process.exit(1);console.log('PASS container sees no controller credentials, host secret, socket or network')",

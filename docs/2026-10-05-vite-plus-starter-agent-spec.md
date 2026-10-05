@@ -1,5 +1,8 @@
 # 持續維護的 Vite+ monorepo starter：Agent 執行提示規格
 
+> 2026-10-05 修訂：依使用者授權精簡維護成本。Renovate 管理版本與 lockfile，CI 使用原生檢查，Pi 處理相容性失敗。以 pnpm runtime/catalog 與一般 Vitest/Playwright 測試取代自訂版本同步、生成器、政策掃描及逐次新副本 smoke。
+
+
 整理日期：2026-10-05。版本：1。
 
 使用方式：將本文件全文交給設置 agent，並在專供 starter 的新目錄或 repository 執行。這份文件是實作指令，不是要求修改目前存放本文件的 Hermes 專案。版本號必須在實作當下重新查證。
@@ -60,7 +63,7 @@
 
 Vite+ 若需要 npm aliases、overrides 或特定 Vitest 相依性，保留官方要求並轉成精確版本；把 Vite+ 與必須協同更新的項目當作一組。不要獨立把它內部的 Vite、Vitest、Oxlint、Oxfmt 或 tsdown 強制升到不支援的版本。
 
-將選定版本、發布時間、查證日期、官方來源、Node 相容性與選版理由記錄在 `docs/toolchain-baseline.md`。對所有固定版本位置建立明確的 Renovate 更新對應，避免紀錄檔與實際設定各自漂移。
+現行版本以 manifests、pnpm catalog／overrides 與 lockfile 為準。`docs/toolchain-baseline.md` 記錄來源與更新責任，不另存版本 metadata 或維護同步器。Node 由 pnpm 原生 `devEngines.runtime` 管理。
 
 ## 4. 專案結構與 package 邊界
 
@@ -71,10 +74,9 @@ apps/
   web/                     # 最小 TypeScript web app，實際引用 core
 packages/
   core/                    # 純 TypeScript 邏輯與公開 exports
-scripts/
-  verify-policy.*          # 驗證版本、結構與防護政策
-  smoke-starter.*          # 從乾淨副本驗證新專案起點
-  smoke-consumer.*         # 驗證 core 的實際建置輸出與宣告
+tests/
+  package.test.ts          # 公開 exports 與宣告
+  e2e/web.spec.ts          # production 畫面行為
 maintenance/
   renovate-config.*        # self-hosted controller 設定
   repair-runner.*          # Pi 執行、修正上限與結果整理
@@ -119,9 +121,6 @@ tsconfig.base.json
 | `pnpm check` | 格式、lint、完整 TS 型別檢查 |
 | `pnpm test` | 非 watch 模式執行全部示例測試 |
 | `pnpm build` | 依相依性順序建置 packages 與 apps |
-| `pnpm verify:policy` | 驗證鎖版、workspace 邊界與安全政策 |
-| `pnpm smoke:consumer` | 用實際建置輸出驗證 package exports 與型別 |
-| `pnpm smoke:starter` | 從乾淨副本完成完整新專案驗證 |
 | `pnpm verify` | 完整、本機可重現的驗收入口 |
 | `pnpm tasks` | Backlog 本機 CLI 入口 |
 | `pnpm tasks:board` | Backlog 任務看板 |
@@ -230,16 +229,16 @@ CI 至少涵蓋 Linux x64 與 macOS arm64；核實 runner 實際架構與可用�
 
 1. 驗證選定 Node、pnpm 與本機工具版本。
 2. 從乾淨 checkout 安裝，執行 `pnpm install --frozen-lockfile`。
-3. 執行版本／防護／workspace 邊界政策檢查。
+3. 使用 pnpm 原生防護及 production audit；updater 變更不得放寬受保護設定。
 4. 執行完整 check、非 watch tests、core packaging 與 web production build。
-5. 以獨立 consumer 驗證 core 的輸出、exports、型別宣告及執行結果。
+5. 以一般測試透過 package 名稱驗證 core 的建置輸出、exports、型別宣告及結果。
 6. 啟動 web production preview，驗證可達及跨 package 的實際結果；必要時使用真實瀏覽器 smoke，不能僅以 HTTP 200 代替畫面行為。
-7. 執行 Backlog CLI 的初始化／讀取 smoke，確認對應的是當前專案。
+7. Backlog CLI 初始化與新專案改名使用 README 步驟，作為設置驗收，不加入每次 CI。
 8. 驗證 tracked manifests 與 lockfile 沒有因安裝／測試而改寫；忽略預期 build artifacts，清理背景服務。
 
-`smoke:starter` 必須建立一份乾淨的新專案副本，排除 `.git`、`node_modules`、dist、快取、秘密與個人資料，套用文件化的名稱／scope 初始化步驟，再重新安裝並驗證。內層執行不可再次遞迴呼叫 `smoke:starter`。不要用原 workspace 的 node_modules、store linkage 或 source aliases 假裝新專案成功。
+乾淨 checkout 由 CI 原生安裝與驗收，不再每次複製、改名、下載 runtime 與重建另一份 starter。新專案初始化採文件步驟，首次使用後執行相同 `pnpm verify`。
 
-加入會實際攔截錯誤的政策驗證案例：浮動 registry 版本、停用 typeCheck、放寬 install scripts、修改受保護測試、舊 SHA 結果、matrix skipped 與選不到必要 package 時，應得到失敗結果。這些案例用於驗證自動合併邊界，不是單純檢查檔案存在。
+保留自動修復必要的邊界測試：受保護測試與設定修改、舊 SHA、matrix skipped、身分偽造與超出修復預算應失敗。pnpm 本身的防護由原生設定執行，不額外維護另一套工具實作測試或 AST 政策掃描器。
 
 ## 11. 遠端流程的真實驗證
 

@@ -17,9 +17,8 @@
     "test": "vp test run"
   },
   "devDependencies": {
-    "@types/node": "24.19.1",
-    "typescript": "7.0.2",
-    "vite-plus": "1.0.0",
-    "vitest": "5.0.1"
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

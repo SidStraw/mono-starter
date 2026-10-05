@@ -13,21 +13,16 @@
   "automergeType": "pr",
   "platformAutomerge": true,
   "rebaseWhen": "behind-base-branch",
-  "skipArtifactsUpdate": true,
   "lockFileMaintenance": {
-    "enabled": false,
+    "enabled": true,
     "schedule": ["before 5am on monday"],
     "automerge": true
   },
   "timezone": "Asia/Taipei",
   "packageRules": [
     {
-      "matchPackageNames": ["vite-plus"],
+      "matchPackageNames": ["vite-plus", "vitest", "@voidzero-dev/vite-plus-core"],
       "groupName": "Vite+ toolchain"
-    },
-    {
-      "matchPackageNames": ["vitest", "@voidzero-dev/vite-plus-core"],
-      "enabled": false
     },
     {
       "matchPackageNames": ["@earendil-works/pi-coding-agent", "@earendil-works/pi-ai"],
@@ -48,10 +43,10 @@
       "customType": "regex",
       "managerFilePatterns": ["/^maintenance/images\\.json$/"],
       "matchStrings": [
-        "\"renovate\": \"(?<depName>ghcr\\.io/renovatebot/renovate):(?<currentValue>\\d+\\.\\d+\\.\\d+)@(?<currentDigest>sha256:[a-f0-9]{64})\""
+        "\"(?:renovate|node)\": \"(?<depName>[^\"\\s]+):(?<currentValue>\\d+\\.\\d+\\.\\d+(?:-bookworm-slim)?)@(?<currentDigest>sha256:[a-f0-9]{64})\""
       ],
       "datasourceTemplate": "docker",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "docker"
     }
   ]
 }

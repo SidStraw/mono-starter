@@ -1,33 +1,27 @@
 # 設置驗收證據
 
-驗證日期：2026-10-05。PASS 僅代表下列明確執行範圍；外部未執行項目另外標示。
+2026-10-05 精簡版。此文件描述現行版本，早期完整副本 smoke、AST 政策掃描與版本 metadata 的證據保留在 Git 歷史，不作為現行流程的驗收結果。
 
-| 項目                                                              | 狀態    | 證據／邊界                                                                                                  |
-| ----------------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
-| 精確版本與官方 registry／Node metadata                            | PASS    | toolchain-baseline.json；72 小時冷卻                                                                        |
-| root bootstrap、core→web、dist consumer                           | PASS    | 固定 runtime，本機 macOS arm64                                                                              |
-| strict／typeAware／typeCheck                                      | PASS    | vp check，未放寬驗收                                                                                        |
-| 冷卻、缺發布時間、poisoned frozen lock、未知 scripts 拒絕         | PASS    | 實際 pnpm 與隔離 HTTP registry fixture                                                                      |
-| production high／critical audit                                   | PASS    | registry advisory；查詢失敗會失敗                                                                           |
-| Backlog CLI                                                       | PASS    | local instructions、remote／auto commit 關閉                                                                |
-| Renovate repo/admin schema 與實際 extraction                      | PASS    | 固定 image 44.132.1；npm/nvm/Actions/custom regex                                                           |
-| skipped／缺平台／過期 SHA／偽造結果／測試與政策修改／累計預算拒絕 | PASS    | 33 項治理測試、6 項 core 測試；全部實際執行                                                                 |
-| 候選容器憑證 canary                                               | PASS    | 真實 container 無 controller key/token、host secret、Docker socket 與外部網路                               |
-| Actions／image 官方 release、冷卻與 digest                        | PASS    | GitHub release/tag SHA 與 GHCR tag/digest 實際比對                                                          |
-| Pi SDK／broker protocol                                           | PASS    | 固定 SDK 1.0.0、fixture model，無付費模型呼叫                                                               |
-| macOS arm64 完整 pnpm verify                                      | PASS    | 實際 pnpm verify、0 cache hit；最後 verify:inner 亦通過                                                     |
-| 全新改名 starter、獨立 store／runtime                             | PASS    | @fresh 副本用自己的 Node/pnpm/store/browser 執行 frozen install 與完整 verify:inner                         |
-| Linux x64 本機容器驗收                                            | PASS    | Docker linux/amd64（Apple Silicon 模擬）：主副本與 @fresh 副本完整 pnpm verify；不代表 GitHub runner 已執行 |
-| GitHub Linux x64／macOS arm64 CI                                  | NOT RUN | 未提供或授權遠端 repository                                                                                 |
-| App、branch protection、auto-merge、週期排程                      | BLOCKED | 需要 owner/repo、首次 push 授權、App 設定與保護方案                                                         |
-| 真實模型修復與計價                                                | BLOCKED | 未提供 provider/model/endpoint/key／價格；fixture 不代表真實模型成功                                        |
+| 項目                                  | 狀態    | 證據／邊界                                                                                  |
+| ------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| 專案本機 Node／pnpm                   | PASS    | 原生 npm 安裝 pnpm；pnpm devEngines.runtime 管理 Node 24.21.0，pnpm 12.8.2                  |
+| frozen install                        | PASS    | 現行 catalog、runtime 與 lockfile 可安裝，不重新選版                                        |
+| core → web 建置                       | PASS    | pnpm build 與完整 verify 實際執行相依圖                                                     |
+| strict／typeAware／typeCheck          | PASS    | vp check，沒有 lint／型別錯誤                                                               |
+| 公開 package exports 與宣告           | PASS    | 一般 Vitest consumer 測試、TypeScript 編譯，使用 dist 公開 exports                          |
+| production 畫面                       | PASS    | Playwright 啟動 preview，驗證跨 package 結果與 page errors                                  |
+| production audit                      | PASS    | 原生 pnpm audit；查詢 npm advisory，未發現已知漏洞                                          |
+| Pi／broker／權限邊界                  | PASS    | SDK fixture 與權限／累計預算測試；沒有真實模型呼叫                                          |
+| Renovate schema／extraction           | PASS    | 固定 image 44.132.1 validator；實際 npm manager 辨識 Node runtime、pnpm、catalog、overrides |
+| 原生 lockfile maintenance             | PASS    | 設定經實際 validator 通過，原生功能啟用且 artifact 更新未停用；遠端 PR 尚未執行             |
+| Pi 容器原生工具準備                   | NOT RUN | 正在驗證；與真實模型閉環分開                                                                |
+| macOS arm64 完整 pnpm verify          | PASS    | build、check、Vitest、Node tests、Playwright、audit；0 cache hit                            |
+| 現行 Linux x64／macOS arm64 GitHub CI | NOT RUN | 未提供並授權遠端 repository                                                                 |
+| App／保護規則／排程／auto-merge       | BLOCKED | 尚需 owner/repo、push 授權、App Secrets 與 branch protection                                |
+| 真實 Pi 修復閉環                      | BLOCKED | 尚需 provider/model/endpoint/key／pricing，以及真實 PR/run                                  |
 
-TypeScript 7.0.2 的宣告 API 在 tsdown 有 experimental 提示；建置與 consumer 均須實際通過。pnpm 安裝有 Pi transitive deprecated packages 提示，未自動豁免或強制覆寫。
+本機 `pnpm verify` 實際通過 35 項測試：7 項 Vitest、27 項 Node 維護邊界、1 項 Playwright，沒有 skipped，0 cache hit。frozen install 前後 manifests 與 lockfile 的 SHA-256 完全一致。刪除的測試對應已移除的生成器、AST 掃描與工具實作 fixture；既有 app 功能與 Pi 權限邊界測試保留。
 
-本機 commit 不代表取得 push 或發布授權。所有 remote maintenance 開關維持停用。
+TypeScript 7 的 tsdown 宣告 API 仍提示 experimental；pnpm 安裝有 transitive deprecated packages 提示。Playwright 的 FORCE_COLOR／NO_COLOR 訊息屬測試輸出設定提示，沒有影響驗收。
 
-驗收入口與實際結果：`pnpm verify`（主專案與 @fresh 副本）、`pnpm verify:inner`（最終來源版本）、固定 Renovate image 的 schema/extraction、`node maintenance/isolation-smoke.mjs`。39 項測試全部通過、沒有 skipped；lint/typeCheck 沒有 warnings 或 errors。
-
-完整 Pi repair-runner 的 GitHub ledger、兩容器、真實模型與原子回寫串接仍為 NOT RUN；broker／SDK fixture 與 canary 不代表遠端閉環已成功。
-
-Linux x64 首次 image 拉取遇到 Docker classic store 的跨架構 digest 衝突；改從固定 OCI index 以 SHA-256 驗證並選取 AMD64 child digest，保留既有 ARM64 image，重新執行完整驗收通過。所有驗收容器與暫存副本已清理。
+早期版本 `973ac34` 曾在 Linux x64 模擬容器與全新改名副本完成驗收；這不代表本次調整已在 GitHub runner 或真實模型完成。遠端維護與 Pi 保持停用，沒有 push、發布或部署。

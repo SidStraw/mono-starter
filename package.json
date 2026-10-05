@@ -7,28 +7,29 @@
     "dev": "vp run develop",
     "check": "vp run check-all",
     "test": "vp run test-all",
-    "build": "vp run build-all",
-    "verify:policy": "vp run policy",
-    "smoke:consumer": "vp run consumer",
-    "smoke:starter": "vp run starter",
+    "build": "vp run --filter './apps/*' --filter './packages/*' --fail-if-no-match build",
     "verify": "vp run --no-cache verify-all",
-    "verify:inner": "vp run --no-cache verify-inner",
     "tasks": "backlog",
     "tasks:board": "backlog board",
-    "tasks:web": "backlog browser --no-open",
-    "init:project": "node scripts/init-project.mjs",
-    "bootstrap": "node scripts/bootstrap.mjs"
+    "tasks:web": "backlog browser --no-open"
   },
   "devDependencies": {
-    "@babel/parser": "8.0.6",
     "@earendil-works/pi-ai": "1.0.0",
     "@earendil-works/pi-coding-agent": "1.0.0",
     "@playwright/test": "1.63.0",
-    "@types/node": "24.19.1",
+    "@starter/core": "workspace:*",
+    "@types/node": "catalog:",
     "backlog.md": "1.53.0",
-    "typescript": "7.0.2",
-    "vite-plus": "1.0.0",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
     "yaml": "2.9.1"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.21.0",
+      "onFail": "download"
+    }
   },
   "packageManager": "pnpm@12.8.2"
 }

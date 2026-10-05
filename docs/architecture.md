@@ -1,27 +1,15 @@
 # 架構
 
-`apps/web` 是可執行應用程式，透過 `workspace:*` 使用 `@starter/core`。`packages/core` 只包含純 TypeScript 邏輯；不能引用 app。consumer 只讀 core 的 `dist/index.mjs` 與 `dist/index.d.mts`，在 workspace 外驗證公開 exports 與負向型別案例。
+`apps/web` 是可執行應用程式，透過 `workspace:*` 使用 `@starter/core`。`packages/core` 只包含純 TypeScript 邏輯，公開 exports 指向 JavaScript 與型別宣告的建置輸出。packages 不引用 apps，不使用 TS paths 或 source aliases 繞過邊界。
 
-root 共用嚴格 TS、lint 與 format。Vite+ 的 Vite alias、Vitest 與必要 peer 配對由官方 bundle metadata 推導；不獨立升級內部工具。TypeScript 7 是穩定版，但 tsdown 仍提示宣告 API 支援為 experimental，必須持續以實際宣告與 consumer 驗收。
+Vite+ 執行格式、lint、型別檢查、Vitest 與建置。root 共享 strict、typeAware、typeCheck；`vp run` 依 core → web 相依關係排程。最終 `pnpm verify` 使用 `--no-cache`，網路 audit 與測試任務不快取。
 
-```mermaid
-flowchart LR
-  core[core build] --> web[web build]
-  core --> consumer[dist consumer]
-  policy[政策與冷卻] --> verify[完整驗收]
-  web --> browser[瀏覽器 smoke]
-  browser --> verify
-  consumer --> verify
-  tests[core 與治理測試] --> verify
-  fresh[乾淨改名副本] --> verify
-```
+`tests/package.test.ts` 透過套件名稱驗證公開 exports 與宣告，`tests/e2e/web.spec.ts` 使用 Playwright 驗證 production 畫面。Playwright 原生 webServer 負責啟動、等待及關閉 preview。Backlog 初始化使用 CLI；新專案複製／改名使用文件步驟，不再維護專用生成器或每次 CI 重建整份 starter。
 
-`vp run --no-cache` 是最終驗收入口。一般 build 可快取；網路、時間、安全情報、smoke 與有副作用的任務關閉快取。必要 filters 使用 `--fail-if-no-match`，Vitest 禁止空測試成功。
+Node 的唯一來源是 root `devEngines.runtime`，由 pnpm 管理下載與完整性。共用開發依賴集中於 pnpm catalog；pnpm 原生設定執行冷卻、信任與安裝權限政策。Renovate 負責所有版本與 lockfile 更新，不另建版本 metadata、同步器或 lockfile worker。Vite+ 關聯版本使用 Renovate 群組；需要對齊 bundle 時使用官方本機 `vp migrate`，並重新驗收。
 
-供應鏈政策集中在 workspace，可信 policy 比對 exact versions、strict、typeAware/typeCheck 與安裝 allowlist。`trustLockfile: false` 讓現有 lockfile 仍接受發布時間檢查。production audit 使用 npm registry advisory 資料；它無法證明不存在惡意套件。
+CI 以原生命令安裝、audit、check、test、build，最後檢查 manifests／lockfile 沒有被改寫。自動維護的候選 PR 仍使用受信任分支的測試與設定；少量 controller 只負責自動修復所需的身分、權限、結果與預算邊界。
 
-可信 controller 與候選程式碼分開。候選依賴／測試不取得寫入憑證；Pi 只有有上限的 broker capability。真實模型 key 留在 broker，App private key 留在可信 controller。候選 container 沒有網路、主機 Git metadata、Docker socket 或主機 HOME；Pi 透過受限工具讀取候選 source。
+Pi 在相容性失敗後讀取錯誤與 migration guide、執行檢查並提出 source patch。Pi 的兩個容器使用含 npm 的官方 Node image，bootstrap 與本機使用相同原生命令。候選 container 不取得寫入／模型憑證；broker 強制執行用量限制。Pi 不能更改測試、workflow、strict、安裝權限或驗收命令。獨立發布階段驗證 diff 與 HEAD，修復後由新 HEAD 的完整 CI 決定能否合併。
 
-Pi 只能輸出現有允許路徑的 source patch，不能改測試、strict、workflow、controller、政策或 allowlist。獨立發布步驟再次檢查原 HEAD、檔案型態與 diff，再由 App 原子提交。新 HEAD 必須重新通過全部 CI。
-
-新增 workspace package 時，同步擴充 `vp run` 相依圖、測試範圍、`sync-toolchain.mjs` 的 manifest 清單與受保護 updater 路徑，再以完整驗收確認新的 package 邊界。自動修復的 source allowlist 也需明確審查。
+新增 package 時宣告自己的相依性、exports、建置順序與一般測試；若要納入自動修復，再審查修復 allowlist 與 updater 允許範圍。

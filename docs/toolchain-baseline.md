@@ -1,24 +1,20 @@
-# Toolchain baseline
+# 版本管理
 
-Generated from fixed manifests and verified release metadata at 2026-10-05T09:03:30.338Z.
+2026-10-05 精簡後，不再複製一份版本／發布時間／integrity 資料或維護同步器。現行版本以以下原生設定與 lockfile 為準：
 
-Node 24.21.0 (Krypton), published 2026-09-07.
+| 項目                         | 唯一設定來源                            | 更新工具                                |
+| ---------------------------- | --------------------------------------- | --------------------------------------- |
+| Node                         | root package.json 的 devEngines.runtime | Renovate npm manager；pnpm 安裝 runtime |
+| pnpm                         | root package.json 的 packageManager     | Renovate npm manager                    |
+| Vite+、TypeScript、Node 型別 | pnpm-workspace.yaml catalog             | Renovate npm manager                    |
+| 其餘直接依賴                 | 各 package.json                         | Renovate npm manager                    |
+| Vite alias、Vitest override  | pnpm-workspace.yaml overrides           | Renovate Vite+ 群組                     |
+| 間接依賴                     | pnpm-lock.yaml                          | Renovate 原生 lockFileMaintenance       |
+| Actions SHA                  | workflow 的 uses                        | Renovate github-actions manager         |
+| 維護 image digest            | maintenance/images.json                 | Renovate custom regex manager           |
 
-| Package                         | Exact version | Published (UTC)          | Source                                                                     |
-| ------------------------------- | ------------- | ------------------------ | -------------------------------------------------------------------------- |
-| @babel/parser                   | 8.0.6         | 2026-09-18T13:49:23.808Z | [registry](https://registry.npmjs.org/%40babel%2Fparser)                   |
-| @earendil-works/pi-ai           | 1.0.0         | 2026-10-01T19:12:18.708Z | [registry](https://registry.npmjs.org/%40earendil-works%2Fpi-ai)           |
-| @earendil-works/pi-coding-agent | 1.0.0         | 2026-10-01T19:15:22.967Z | [registry](https://registry.npmjs.org/%40earendil-works%2Fpi-coding-agent) |
-| @playwright/test                | 1.63.0        | 2026-09-04T22:44:00.304Z | [registry](https://registry.npmjs.org/%40playwright%2Ftest)                |
-| @types/node                     | 24.19.1       | 2026-10-01T22:38:02.894Z | [registry](https://registry.npmjs.org/%40types%2Fnode)                     |
-| backlog.md                      | 1.53.0        | 2026-09-24T17:28:54.558Z | [registry](https://registry.npmjs.org/backlog.md)                          |
-| typescript                      | 7.0.2         | 2026-07-08T15:55:18.431Z | [registry](https://registry.npmjs.org/typescript)                          |
-| vite-plus                       | 1.0.0         | 2026-09-28T05:37:20.027Z | [registry](https://registry.npmjs.org/vite-plus)                           |
-| yaml                            | 2.9.1         | 2026-09-11T20:30:10.905Z | [registry](https://registry.npmjs.org/yaml)                                |
-| vitest                          | 5.0.1         | 2026-09-15T08:49:35.830Z | [registry](https://registry.npmjs.org/vitest)                              |
-| pnpm                            | 12.8.2        | 2026-09-30T01:15:12.518Z | [registry](https://registry.npmjs.org/pnpm)                                |
-| @voidzero-dev/vite-plus-core    | 1.0.0         | 2026-09-28T05:31:52.032Z | [registry](https://registry.npmjs.org/%40voidzero-dev%2Fvite-plus-core)    |
+版本採精確值，Node 維持 24 LTS track。Renovate 群組提出 Vite+ 關聯更新；需要 bundle 對齊時使用 `pnpm exec vp migrate`，依官方工具處理，再安裝並執行完整 CI。Pi 不自動放寬 overrides、安裝權限或受保護設定。
 
-Actions checkout v7.0.1 (3d3c42e5aac5ba805825da76410c181273ba90b1), published 2026-07-20T15:10:05Z. Renovate image 44.132.1, published 2026-10-02T05:41:40Z; its tag/digest was checked against GHCR.
+pnpm 原生設定執行 72 小時冷卻、缺時間失敗、信任不可降級與未知安裝腳本失敗。production 漏洞檢查直接使用 `pnpm audit --prod --audit-level high`。TypeScript 7 的 tsdown 宣告 API 仍有 experimental 提示，以實際建置及 package 宣告測試驗證。
 
-Vite/core/Vitest are derived as one supported bundle. The TypeScript 7 API warning in tsdown is recorded; declaration generation and isolated consumer are required acceptance checks. Install builds: esbuild@0.28.2 allowed after review; @google/genai@2.21.0 and protobufjs@7.6.6 explicitly denied.
+官方依據：[pnpm runtime](https://pnpm.io/cli/runtime)、[catalogs](https://pnpm.io/catalogs)、[Renovate npm manager](https://docs.renovatebot.com/modules/manager/npm/)、[Vite+ upgrade](https://viteplus.dev/guide/upgrade-project)。

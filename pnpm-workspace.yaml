@@ -1,6 +1,10 @@
 packages:
   - apps/*
   - packages/*
+catalog:
+  vite-plus: 1.0.0
+  typescript: 7.0.2
+  '@types/node': 24.19.1
 saveExact: true
 minimumReleaseAge: 4320
 minimumReleaseAgeStrict: true
@@ -17,5 +21,5 @@ peerDependencyRules:
   allowedVersions:
     vitest@5.0.1>vite: 1.0.0
 overrides:
-  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
-  vitest: 5.0.1
+  vite@*: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vitest@*: 5.0.1
