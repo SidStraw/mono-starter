@@ -14,15 +14,13 @@
     "tasks:web": "backlog browser --no-open"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "1.0.0",
     "@earendil-works/pi-coding-agent": "1.0.0",
     "@playwright/test": "1.63.0",
     "@starter/core": "workspace:*",
     "@types/node": "catalog:",
     "backlog.md": "1.53.0",
     "typescript": "catalog:",
-    "vite-plus": "catalog:",
-    "yaml": "2.9.1"
+    "vite-plus": "catalog:"
   },
   "devEngines": {
     "runtime": {

@@ -14,9 +14,9 @@ trustLockfile: false
 blockExoticSubdeps: true
 strictDepBuilds: true
 allowBuilds:
-  esbuild@0.28.2: true
-  '@google/genai@2.21.0': false
-  protobufjs@7.6.6: false
+  esbuild: true
+  '@google/genai': false
+  protobufjs: false
 peerDependencyRules:
   allowedVersions:
     vitest@5.0.1>vite: 1.0.0

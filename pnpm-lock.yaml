@@ -182,9 +182,6 @@ importers:
 
   .:
     devDependencies:
-      '@earendil-works/pi-ai':
-        specifier: 1.0.0
-        version: 1.0.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(undici@8.10.2)(ws@8.22.0)
       '@earendil-works/pi-coding-agent':
         specifier: 1.0.0
         version: 1.0.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(ws@8.22.0)
@@ -209,9 +206,6 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 1.0.0(@types/node@24.19.1)(@vitest/ui@5.0.1)(esbuild@0.28.2)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)
-      yaml:
-        specifier: 2.9.1
-        version: 2.9.1
 
   apps/web:
     dependencies:
@@ -3735,7 +3729,8 @@ snapshots:
 
   yaml@2.9.0: {}
 
-  yaml@2.9.1: {}
+  yaml@2.9.1:
+    optional: true
 
   yuku-ast@0.9.5:
     dependencies:

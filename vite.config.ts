@@ -9,11 +9,7 @@ export default defineConfig({
   fmt: {
     singleQuote: true,
     semi: true,
-    ignorePatterns: [
-      'backlog/**',
-      'docs/2026-10-05-vite-plus-starter-agent-spec.md',
-      'docs/2026-10-05-vite-plus-starter-implementation-plan.md',
-    ],
+    ignorePatterns: ['backlog/**'],
   },
   test: {
     include: ['packages/*/src/**/*.test.ts', 'tests/**/*.test.ts'],
@@ -21,10 +17,14 @@ export default defineConfig({
   },
   run: {
     tasks: {
-      develop: { command: 'vp -C apps/web dev', dependsOn: ['@starter/core#build'], cache: false },
+      develop: {
+        command: "vp run --filter './apps/*' --filter './packages/*' --parallel dev",
+        dependsOn: ['@starter/core#build'],
+        cache: false,
+      },
       'check-all': { command: 'vp check', dependsOn: ['@starter/core#build'] },
       'test-all': {
-        command: ['vp test run', 'node --test maintenance/*.test.mjs', 'playwright test'],
+        command: ['vp test run', 'playwright test'],
         dependsOn: ['@starter/web#build'],
         cache: false,
       },

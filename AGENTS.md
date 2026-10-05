@@ -32,7 +32,7 @@ Do not edit Backlog task, draft, document, decision, or milestone markdown files
 - Keep TypeScript strict and root `typeAware`/`typeCheck` enabled. Never replace package boundaries with TS paths or source aliases.
 - Use Backlog CLI lifecycle instructions; auto commit and remote operations stay disabled. The web UI remains on localhost.
 - Use small Conventional Commits after verified stages. A local commit does not authorize push, publishing or deployment.
-- Never print/store credentials in source, logs, prompts or evidence. Only trusted isolated jobs receive repository write credentials.
-- Automated repair may change allowlisted application/package source only. Tests, snapshots, workflows, controller, checks, install allowlists and verification commands are protected.
-- Repair retries are counted per PR across runs: at most 2 attempts and 20 minutes. The model broker enforces configured usage limits independently of model output.
-- Remote maintenance remains disabled until a specific repository, App identity, protected check and model configuration are explicitly configured and verified.
+- Prefer native tool configuration over custom scripts or controllers. Renovate proposes dependency and lockfile updates; GitHub Actions runs `pnpm verify`.
+- Never print/store credentials in source, logs, prompts or evidence. PR verification runs with read-only permissions and no model credentials.
+- Pi CI assistance is an optional, manually triggered diagnosis of failed logs. Disable tools and project resources in that workflow; keep its credentials confined to the diagnosis step. It does not decide CI success or write back to PRs.
+- Enable remote integrations only after their repository settings are configured. Keep Renovate automerge disabled by default; when enabling it, require both platform CI checks in GitHub branch protection.
