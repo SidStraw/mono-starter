@@ -61,6 +61,12 @@ export async function initProject(target, name, scope) {
   policy.repair.pricing = null;
   policy.repair.migrationGuides = [];
   await writeFile(join(target, 'maintenance/policy.json'), JSON.stringify(policy, null, 2) + '\n');
+  const evidence = join(target, 'docs/setup-evidence.md');
+  await writeFile(
+    evidence,
+    `> Source starter evidence only. This new project (${name}) has not been verified; run pnpm verify and record its own results.\n\n` +
+      (await readFile(evidence, 'utf8')),
+  );
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [target, name, scope] = process.argv.slice(2);

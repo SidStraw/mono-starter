@@ -7,7 +7,11 @@ import {
   updaterChange,
   reserveAttempt,
   settleAttempt,
+  verifyFiles,
 } from './guards.mjs';
+import { mkdtemp, mkdir, writeFile, symlink, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { dependencyVersion, configObject } from '../scripts/verify-policy.mjs';
 
 const expected = {
@@ -55,6 +59,26 @@ void describe('trusted merge boundary', () => {
     ));
 });
 void describe('policy and patch boundary', () => {
+  void it('rejects a real source ancestor symlink before reading an exported patch', async () => {
+    const temp = await mkdtemp(join(tmpdir(), 'patch-symlink-'));
+    try {
+      const base = join(temp, 'base');
+      const candidate = join(temp, 'candidate');
+      const outside = join(temp, 'outside');
+      await mkdir(join(base, 'packages/core/src'), { recursive: true });
+      await mkdir(join(candidate, 'packages/core'), { recursive: true });
+      await mkdir(outside);
+      await writeFile(join(base, 'packages/core/src/index.ts'), 'export const value = 1;');
+      await writeFile(join(outside, 'index.ts'), 'export const value = 2;');
+      await symlink(outside, join(candidate, 'packages/core/src'));
+      await assert.rejects(
+        () => verifyFiles(base, candidate, ['packages/core/src/index.ts'], 'repair', {}),
+        /ancestor symlink/,
+      );
+    } finally {
+      await rm(temp, { recursive: true, force: true });
+    }
+  });
   void it('rejects floating registry and alias versions', () => {
     for (const value of [
       'latest',

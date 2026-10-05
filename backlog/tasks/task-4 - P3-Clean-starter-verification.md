@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-10-05 08:07'
-updated_date: '2026-10-05 09:10'
+updated_date: '2026-10-05 09:31'
 labels: []
 dependencies:
   - TASK-3
@@ -32,6 +32,12 @@ ordinal: 4000
 <!-- SECTION:PLAN:BEGIN -->
 依已核准計畫實作並保存客觀驗收結果。
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+追加 Linux x64 本機 Docker 驗收：process.platform=linux/process.arch=x64；主副本及獨立 @fresh 副本完整 pnpm verify 通過、0 cache hit。Apple Silicon 上的模擬驗收不代表 GitHub runner 已執行。Docker classic store 跨架構 digest 衝突已以固定 OCI index 的 AMD64 child digest 解決。
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 

@@ -4,7 +4,7 @@ title: 'P4: Trusted CI gate'
 status: Done
 assignee: []
 created_date: '2026-10-05 08:07'
-updated_date: '2026-10-05 09:11'
+updated_date: '2026-10-05 09:29'
 labels: []
 dependencies:
   - TASK-4
@@ -30,6 +30,12 @@ ordinal: 5000
 <!-- SECTION:PLAN:BEGIN -->
 固定 trusted checkout、分階段 candidate 驗收與獨立 aggregate；以實際 workflow 結構及 gate 拒絕測試查核。
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+收尾加固：privileged controller 固定預設分支，非預設 base/dispatch 不取得 gate 資格；成功 CI 不觸發 repair，普通 human PR 不跑 bot artifact worker。實際 workflow 結構測試通過。
+<!-- SECTION:NOTES:END -->
 
 ## Final Summary
 

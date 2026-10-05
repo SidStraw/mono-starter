@@ -22,6 +22,17 @@ void it('reserves budget before dispatch and retains full charge for missing usa
   assert.throws(() =>
     budget.reserve({ model: 'fixture-model', messages: [{ content: 'x'.repeat(10000) }] }),
   );
+  const costLimited = new UsageBudget({
+    model: 'fixture-model',
+    maxTokens: 60000,
+    maxCostUsd: 0.000001,
+    pricing: { inputUsdPerMillion: 1, outputUsdPerMillion: 2 },
+  });
+  assert.throws(
+    () => costLimited.reserve({ model: 'fixture-model', messages: [{ content: 'test' }] }),
+    /cost limit/,
+  );
+  assert.equal(costLimited.spent.tokens, 0);
 });
 void it('keeps the provider key outside the client and rejects non-model routes', async () => {
   let sawKey = false;

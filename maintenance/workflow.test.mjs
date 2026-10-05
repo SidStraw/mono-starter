@@ -19,7 +19,9 @@ void it('preserves trusted checkouts and explicit required platform jobs in the 
     'Fresh starter checks',
   ])
     assert.ok(ci.jobs.verify.steps.some((step) => step.name === name));
-  assert.equal(ci.jobs.verification.if, 'always()');
+  assert.match(ci.jobs.verification.if, /^always\(\)/);
+  assert.match(ci.jobs.verify.if, /repository.default_branch/);
+  assert.match(ci.jobs.verification.if, /repository.default_branch/);
   assert.deepEqual(ci.jobs.verification.needs, ['verify']);
   for (const workflow of [
     'ci',
@@ -40,4 +42,6 @@ void it('preserves trusted checkouts and explicit required platform jobs in the 
   const repair = parse(await readFile('.github/workflows/dependency-repair.yml', 'utf8'));
   assert.match(artifact.concurrency.group, /^dependency-patch-/);
   assert.match(repair.concurrency.group, /^dependency-patch-/);
+  assert.match(repair.jobs.repair.if, /workflow_run.conclusion == 'failure'/);
+  assert.match(artifact.jobs.update.if, /pull_request.user.type == 'Bot'/);
 });

@@ -23,3 +23,5 @@ flowchart LR
 可信 controller 與候選程式碼分開。候選依賴／測試不取得寫入憑證；Pi 只有有上限的 broker capability。真實模型 key 留在 broker，App private key 留在可信 controller。候選 container 沒有網路、主機 Git metadata、Docker socket 或主機 HOME；Pi 透過受限工具讀取候選 source。
 
 Pi 只能輸出現有允許路徑的 source patch，不能改測試、strict、workflow、controller、政策或 allowlist。獨立發布步驟再次檢查原 HEAD、檔案型態與 diff，再由 App 原子提交。新 HEAD 必須重新通過全部 CI。
+
+新增 workspace package 時，同步擴充 `vp run` 相依圖、測試範圍、`sync-toolchain.mjs` 的 manifest 清單與受保護 updater 路徑，再以完整驗收確認新的 package 邊界。自動修復的 source allowlist 也需明確審查。

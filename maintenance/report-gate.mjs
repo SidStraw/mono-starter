@@ -30,7 +30,7 @@ let conclusion = 'success';
 try {
   if (
     process.env.REQUIRED_MATRIX_RESULT !== 'success' ||
-    !run.path.startsWith('.github/workflows/ci.yml') ||
+    run.path.split('@')[0] !== '.github/workflows/ci.yml' ||
     run.head_sha !== expected.policy
   )
     throw new Error('Untrusted/skipped workflow');
