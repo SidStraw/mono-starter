@@ -54,9 +54,30 @@ Linux 缺少瀏覽器函式庫時，改用 `pnpm exec playwright install --with-
 
 [Pi CI diagnosis](.github/workflows/pi-diagnose.yml) 使用 Pi 原生 CLI。維護者在預設分支手動選擇失敗的 Actions run ID，Pi 讀取失敗日誌的最後 100,000 bytes，將原因分析、修正建議與待執行測試寫入該次診斷的 Actions summary。
 
-啟用前設定 repository variables `PI_DIAGNOSE_ENABLED=true`、`PI_PROVIDER`、`PI_MODEL`，以及 secret `PI_API_KEY`。日誌片段會送往所選模型供應商；費用上限由供應商端設定。workflow 有 10 分鐘逾時限制，這不等於費用上限。
+使用 OpenCode Go 的 GLM-5.3 時，到 repository 的 **Settings → Secrets and variables → Actions** 設定：
 
-診斷時停用 Pi 的工具、擴充功能、專案設定與 session 儲存。Pi 提供建議，實際測試結果以 CI 為準；此流程沒有自動修復、寫回 PR 或改寫檢查結果的功能。未設定以上項目時，Pi workflow 會跳過，一般 CI 照常執行。
+| 類型     | 名稱                  | 值                                      |
+| -------- | --------------------- | --------------------------------------- |
+| Variable | `PI_DIAGNOSE_ENABLED` | `true`                                  |
+| Variable | `PI_PROVIDER`         | `opencode-go`                           |
+| Variable | `PI_MODEL`            | `glm-5.3`                               |
+| Secret   | `PI_API_KEY`          | OpenCode Console 中已訂閱 Go 的 API key |
+
+Pi 已內建此 [provider/model](https://pi.dev/models/opencode-go/glm-5-3)，會使用 Go 的 `/zen/go/v1` endpoint，無須另外建立 provider。日誌片段會送往 OpenCode；Go 用量以 [Console 與方案限制](https://opencode.ai/docs/go/) 為準。`Use balance` 開啟後，超出 Go 用量可能改扣 Zen 餘額。
+
+workflow 使用 `pi --print --session <檔案>`，每次執行完成就退出，不開啟互動介面。一次性執行與 session 保存是分開的功能。Pi 的工具、擴充功能與專案設定仍停用；它提供建議，實際測試結果以 CI 為準，沒有自動修復或 PR 回寫。
+
+失敗與接續方式：
+
+- [原生 Pi 設定](.github/pi-settings.json) 將 HTTP 無回應逾時設為 90 秒，暫時性錯誤最多自動重試 2 次。認證錯誤、Go 額度用盡等非暫時性錯誤會失敗，需要先處理原因。
+- 單次 Pi 行程最多執行 6 分鐘，整個 job 最多 15 分鐘；失敗或空白結果不算成功。這些是時間與重試限制，不是費用上限。
+- session 以 `pi-session-<CI run ID>` artifact 保存 7 天，包含對話與日誌片段，不上傳 Pi 的認證檔。其可見範圍依 repository 的 Actions artifact 存取權限。
+- 同一次 Pi workflow 選 **Re-run failed jobs** 時，會先下載既有 session，再接續診斷。若第一次失敗在建立 session 之前，會重新建立診斷。
+- 若要另開 workflow 接續，`run_id` 填原本失敗的 **CI run ID**，`resume_run_id` 填先前的 **Pi diagnosis run ID**。指定的 artifact 不存在或下載失敗時，流程會失敗，不會默默改開新對話。
+
+接續使用已落盤的對話歷史，不保證保留中斷瞬間尚未寫入的串流內容。runner 消失或 artifact 上傳失敗時，也無法保證復原該次新增紀錄；模型正常失敗及行程逾時後，workflow 會嘗試保存 session。
+
+未啟用 `PI_DIAGNOSE_ENABLED` 時，Pi job 會跳過；啟用後缺少 provider、model 或 key，job 會失敗。一般 CI 不受 Pi 設定影響。手動 workflow 必須先合併到預設分支才能執行。
 
 本機可使用 `PI_CODING_AGENT_DIR="$PWD/.pi/agent" pnpm exec pi` 協助開發與執行測試，將設定及 session 留在已忽略的專案目錄。依 [Pi 文件](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs) 設定自己的模型認證，完成變更後執行 `pnpm verify`。
 

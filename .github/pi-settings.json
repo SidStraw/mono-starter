@@ -1,0 +1,9 @@
+{
+  "cacheWarming": "off",
+  "httpIdleTimeoutMs": 90000,
+  "retry": {
+    "enabled": true,
+    "maxRetries": 2,
+    "provider": { "maxRetries": 0 }
+  }
+}
